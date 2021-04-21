@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.2)
 
 set(CMAKE_CXX_STANDARD 14)
 set(TOP ${CMAKE_SOURCE_DIR})
@@ -79,3 +79,9 @@ target_link_libraries(bmodel_dump ${bmnnsdk_link_libs})
 
 add_executable(data_compare data_compare/data_compare.cpp)
 target_link_libraries(data_compare ${bmnnsdk_link_libs})
+
+add_executable(bmimage_to_gray bmimage_to_gray/bmimage_to_gray.cpp)
+target_link_libraries(bmimage_to_gray ${bmnnsdk_link_libs})
+
+add_executable(opencv_gray_issue1 opencv_gray_issue1.cpp)
+target_link_libraries(opencv_gray_issue1 ${bmnnsdk_link_libs})
