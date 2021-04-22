@@ -2,6 +2,8 @@
 // Created by yuan on 4/20/21.
 //
 #include "opencv2/opencv.hpp"
+#include "bmlib_runtime.h"
+#include "bmcv_api_ext.h"
 
 #define TEST_SOC 0
 

@@ -7,69 +7,86 @@ if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH x86-pcie)
 endif()
 
+option(USE_BMNNSDK2 "Use bmnnsdk2 as sdk root" OFF)
+
 #set(TARGET_ARCH "x86-pcie")
 #set(TARGET_ARCH "arm-pcie")
 #set(TARGET_ARCH "soc")
 
 # User need to set this before compiling.
-if (DEFINED ENV{REL_TOP})
-    set(BMNNSDK2_TOP $ENV{REL_TOP})
-else()
-    set(BMNNSDK2_TOP $ENV{HOME}/bmnnsdk2/bmnnsdk2-bm1684_v2.3.2)
-endif()
+if (USE_BMNNSDK2)
+    if (DEFINED ENV{REL_TOP})
+        set(BMNNSDK2_TOP $ENV{REL_TOP})
+    else ()
+        set(BMNNSDK2_TOP $ENV{HOME}/bmnnsdk2/bmnnsdk2-bm1684_v2.3.2)
+    endif ()
 
-set(bmnnsdk_inc_dirs ${BMNNSDK2_TOP}/include
-        ${BMNNSDK2_TOP}/include/bmruntime
-        ${BMNNSDK2_TOP}/include/bmlib
-        ${BMNNSDK2_TOP}/include/third_party/boost/include
-        ${BMNNSDK2_TOP}/include/opencv/opencv4
-        ${BMNNSDK2_TOP}/include/ffmpeg
-        CACHE INTERNAL "")
-
-set(bmnnsdk_link_libs bmrt bmlib bmcv
-        opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
-        avfilter avformat avcodec avutil swresample swscale bmvideo bmjpuapi bmjpulite
-        boost_system boost_filesystem protobuf gflags glog pthread
-        CACHE INTERNAL "")
-
-if (${TARGET_ARCH} STREQUAL "x86-pcie")
-    set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/pcie
-            ${BMNNSDK2_TOP}/lib/opencv/x86
-            ${BMNNSDK2_TOP}/lib/thirdparty/x86
-            ${BMNNSDK2_TOP}/lib/opencv/x86
-            ${BMNNSDK2_TOP}/lib/ffmpeg/x86
-            ${BMNNSDK2_TOP}/lib/decode/x86
+    set(bmnnsdk_inc_dirs ${BMNNSDK2_TOP}/include
+            ${BMNNSDK2_TOP}/include/bmruntime
+            ${BMNNSDK2_TOP}/include/bmlib
+            ${BMNNSDK2_TOP}/include/third_party/boost/include
+            ${BMNNSDK2_TOP}/include/opencv/opencv4
+            ${BMNNSDK2_TOP}/include/ffmpeg
             CACHE INTERNAL "")
 
-
-elseif (${TARGET_ARCH} STREQUAL "arm-pcie")
-    set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/arm_pcie
-            ${BMNNSDK2_TOP}/lib/opencv/arm_pcie
-            ${BMNNSDK2_TOP}/lib/thirdparty/soc
-            ${BMNNSDK2_TOP}/lib/opencv/arm_pcie
-            ${BMNNSDK2_TOP}/lib/ffmpeg/arm_pcie
-            ${BMNNSDK2_TOP}/lib/decode/arm_pcie
+    set(bmnnsdk_link_libs bmrt bmlib bmcv
+            opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
+            avfilter avformat avcodec avutil swresample swscale bmvideo bmjpuapi bmjpulite
+            boost_system boost_filesystem protobuf gflags glog pthread
             CACHE INTERNAL "")
-else()
-    set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/soc
-            ${BMNNSDK2_TOP}/lib/opencv/soc
-            ${BMNNSDK2_TOP}/lib/thirdparty/soc
-            ${BMNNSDK2_TOP}/lib/opencv/soc
-            ${BMNNSDK2_TOP}/lib/ffmpeg/soc
-            ${BMNNSDK2_TOP}/lib/decode/soc
-            CACHE INTERNAL "")
-endif ()
 
-include_directories(${bmnnsdk_inc_dirs} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Core_INCLUDE_DIRS}
-        ${Qt5Concurrent_INCLUDE_DIRS}
-        ${Qt5Test_INCLUDE_DIRS})
-link_directories(${bmnnsdk_link_dirs})
+    if (${TARGET_ARCH} STREQUAL "x86-pcie")
+        set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/pcie
+                ${BMNNSDK2_TOP}/lib/opencv/x86
+                ${BMNNSDK2_TOP}/lib/thirdparty/x86
+                ${BMNNSDK2_TOP}/lib/opencv/x86
+                ${BMNNSDK2_TOP}/lib/ffmpeg/x86
+                ${BMNNSDK2_TOP}/lib/decode/x86
+                CACHE INTERNAL "")
 
-set(bm_link_libs bmrt bmlib)
 
-add_definitions(-DBM_VPP_ENABLE=1)
+    elseif (${TARGET_ARCH} STREQUAL "arm-pcie")
+        set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/arm_pcie
+                ${BMNNSDK2_TOP}/lib/opencv/arm_pcie
+                ${BMNNSDK2_TOP}/lib/thirdparty/soc
+                ${BMNNSDK2_TOP}/lib/opencv/arm_pcie
+                ${BMNNSDK2_TOP}/lib/ffmpeg/arm_pcie
+                ${BMNNSDK2_TOP}/lib/decode/arm_pcie
+                CACHE INTERNAL "")
+    else ()
+        set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/soc
+                ${BMNNSDK2_TOP}/lib/opencv/soc
+                ${BMNNSDK2_TOP}/lib/thirdparty/soc
+                ${BMNNSDK2_TOP}/lib/opencv/soc
+                ${BMNNSDK2_TOP}/lib/ffmpeg/soc
+                ${BMNNSDK2_TOP}/lib/decode/soc
+                CACHE INTERNAL "")
+    endif ()
+else (USE_BMNNSDK2)
+    set(BM168X_ROOT /home/yuan/bitmain/work/bm168x)
+    set(NNTC_ROOT /home/yuan/bitmain/work/nntoolchain)
+    set(MW_ROOT /home/yuan/bitmain/work/middleware-soc/install/pcie_bm1684_asic)
 
-#find_package(OpenCV)
+    set(bmnnsdk_inc_dirs ${BM168X_ROOT}/out/bm1684_x86_pcie_device/release/include
+            ${NNTC_ROOT}/net_compiler/out/install_bmruntime/include
+            ${MW_ROOT}/ffmpeg/usr/local/include
+            ${MW_ROOT}/opencv/include/opencv4)
+    set(bmnnsdk_link_dirs ${BM168X_ROOT}/out/bm1684_x86_pcie_device/release/libs
+            ${NNTC_ROOT}/net_compiler/out/install_bmruntime/lib
+            ${MW_ROOT}/opencv/lib
+            ${MW_ROOT}/ffmpeg/usr/local/lib
+            ${MW_ROOT}/decode/lib
+            )
+
+    set(bmnnsdk_link_libs
+            opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
+            avfilter avformat avcodec avutil swresample swscale bmvideo bmjpuapi bmjpulite
+            bmrt bmcv bmlib)
+
+
+endif(USE_BMNNSDK2)
+
+message(STATUS "bmnnsdk_inc_dirs=${bmnnsdk_inc_dirs}")
 
 include_directories(${bmnnsdk_inc_dirs})
 link_directories(${bmnnsdk_link_dirs})
