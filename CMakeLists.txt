@@ -7,7 +7,7 @@ if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH x86-pcie)
 endif()
 
-option(USE_BMNNSDK2 "Use bmnnsdk2 as sdk root" OFF)
+option(USE_BMNNSDK2 "Use bmnnsdk2 as sdk root" ON)
 
 #set(TARGET_ARCH "x86-pcie")
 #set(TARGET_ARCH "arm-pcie")
@@ -102,3 +102,6 @@ target_link_libraries(bmimage_to_gray ${bmnnsdk_link_libs})
 
 add_executable(opencv_gray_issue1 opencv_gray_issue1.cpp)
 target_link_libraries(opencv_gray_issue1 ${bmnnsdk_link_libs})
+
+add_executable(issue2 issue2/classifier.cpp)
+target_link_libraries(issue2 ${bmnnsdk_link_libs})
