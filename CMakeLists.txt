@@ -4,15 +4,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(TOP ${CMAKE_SOURCE_DIR})
 
 if (NOT DEFINED TARGET_ARCH)
-    set(TARGET_ARCH x86-pcie)
+    set(TARGET_ARCH x86)
 endif()
 
 option(USE_BMNNSDK2 "Use bmnnsdk2 as sdk root" ON)
-option(USE_DEV_OPENCV "Use Develop opencv" ON)
-
-#set(TARGET_ARCH "x86-pcie")
-#set(TARGET_ARCH "arm-pcie")
-#set(TARGET_ARCH "soc")
+option(USE_DEV_OPENCV "Use Develop opencv" OFF)
 
 # User need to set this before compiling.
 if (USE_BMNNSDK2)
@@ -26,60 +22,68 @@ if (USE_BMNNSDK2)
             ${BMNNSDK2_TOP}/include/bmruntime
             ${BMNNSDK2_TOP}/include/bmlib
             ${BMNNSDK2_TOP}/include/third_party/boost/include
-	    #${BMNNSDK2_TOP}/include/opencv/opencv4
-            ${BMNNSDK2_TOP}/include/ffmpeg
-            CACHE INTERNAL "")
+            )
 
-    set(bmnnsdk_link_libs bmrt bmlib bmcv
-            opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
-            avfilter avformat avcodec avutil swresample swscale bmvideo bmjpuapi bmjpulite
-            boost_system boost_filesystem protobuf gflags glog pthread
-            CACHE INTERNAL "")
+    set(opencv_inc_dirs ${BMNNSDK2_TOP}/include/opencv/opencv4)
+    set(ffmpeg_inc_dirs ${BMNNSDK2_TOP}/include/ffmepg)
 
-    if (${TARGET_ARCH} STREQUAL "x86-pcie")
+
+    if (${TARGET_ARCH} STREQUAL "x86")
         set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/pcie
-                ${BMNNSDK2_TOP}/lib/opencv/x86
                 ${BMNNSDK2_TOP}/lib/thirdparty/x86
-		#${BMNNSDK2_TOP}/lib/opencv/x86
-                ${BMNNSDK2_TOP}/lib/ffmpeg/x86
+                )
+        set(opencv_link_dirs ${BMNNSDK2_TOP}/lib/opencv/x86)
+        set(ffmpeg_link_dirs ${BMNNSDK2_TOP}/lib/ffmpeg/x86
                 ${BMNNSDK2_TOP}/lib/decode/x86
-                CACHE INTERNAL "")
-
-
-    elseif (${TARGET_ARCH} STREQUAL "arm-pcie")
+                )
+    elseif (${TARGET_ARCH} STREQUAL "aarch64")
         set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/arm_pcie
-                ${BMNNSDK2_TOP}/lib/opencv/arm_pcie
                 ${BMNNSDK2_TOP}/lib/thirdparty/soc
-		#${BMNNSDK2_TOP}/lib/opencv/arm_pcie
-                ${BMNNSDK2_TOP}/lib/ffmpeg/arm_pcie
+		   )
+        set(opencv_link_dirs ${BMNNSDK2_TOP}/lib/opencv/arm_pcie)
+        set(ffmpeg_link_dirs ${BMNNSDK2_TOP}/lib/ffmpeg/arm_pcie
                 ${BMNNSDK2_TOP}/lib/decode/arm_pcie
-                CACHE INTERNAL "")
-    else ()
-        set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/soc
-                ${BMNNSDK2_TOP}/lib/opencv/soc
-                ${BMNNSDK2_TOP}/lib/thirdparty/soc
-		#${BMNNSDK2_TOP}/lib/opencv/soc
-                ${BMNNSDK2_TOP}/lib/ffmpeg/soc
-                ${BMNNSDK2_TOP}/lib/decode/soc
-                CACHE INTERNAL "")
+                )
+    elseif (${TARGET_ARCH} STREQUAL "mips64")
+        set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/mips64
+                ${BMNNSDK2_TOP}/lib/thirdparty/mips64
+                )
+        set(opencv_link_dirs ${BMNNSDK2_TOP}/lib/opencv/mips64)
+        set(ffmpeg_link_dirs ${BMNNSDK2_TOP}/lib/ffmpeg/mips64
+                ${BMNNSDK2_TOP}/lib/decode/mips64
+                )
     endif ()
-endif ()
-    set(BM168X_ROOT /home/yuan/bitmain/work/bm168x)
-    set(NNTC_ROOT /home/yuan/bitmain/work/nntoolchain)
-    set(MW_ROOT /home/linaro/soc_bm1684_asic)
-
-    set(opencv_inc_dirs ${MW_ROOT}/opencv/include/opencv4)
-    set(opencv_link_dirs ${MW_ROOT}/opencv/lib)
-
-    set(opencv_link_libs
-            opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
-            avfilter avformat avcodec avutil swresample swscale bmvideo bmjpuapi bmjpulite
-            bmrt bmcv bmlib)
-
-
 endif(USE_BMNNSDK2)
 
+if(USE_DEV_OPENCV)
+    if (${TARGET_ARCH} STREQUAL "x86")
+        set(MW_ROOT /home/linaro/pcie_bm1684_asic)
+    elseif (${TARGET_ARCH} STREQUAL "aarch64")
+        set(MW_ROOT /home/linaro/pcie_arm64_bm1684_asic)
+    elseif (${TARGET_ARCH} STREQUAL "mips64")
+        set(MW_ROOT /home/linaro/pcie_mips64_bm1684_asic)
+    elseif (${TARGET_ARCH} STREQUAL "soc")
+        set(MW_ROOT /home/linaro/soc_bm1684_asic)
+    endif()
+
+    set(opencv_inc_dirs ${MW_ROOT}/opencv/include/opencv4)
+    set(ffmpeg_inc_dirs ${MW_ROOT}/ffmepg/usr/local/include)
+    set(opencv_link_dirs ${MW_ROOT}/opencv/lib)
+    set(ffmpeg_link_dirs ${MW_ROOT}/ffmpeg/lib
+            ${MW_ROOT}/decode/lib
+            )
+endif()
+
+set(bmnnsdk_inc_dirs ${bmnnsdk_inc_dirs} ${opencv_inc_dirs} ${ffmpeg_inc_dirs})
+set(bmnnsdk_link_dirs ${bmnnsdk_link_dirs} ${opencv_link_dirs} ${ffmpeg_link_dirs})
 message(STATUS "bmnnsdk_inc_dirs=${bmnnsdk_inc_dirs}")
+
+set(bmnnsdk_link_libs bmrt bmlib bmcv
+        opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
+        avfilter avformat avcodec avutil swresample swscale
+        bmvideo bmjpuapi bmjpulite
+        boost_system boost_filesystem protobuf gflags glog pthread)
+
 
 include_directories(${bmnnsdk_inc_dirs})
 link_directories(${bmnnsdk_link_dirs})
