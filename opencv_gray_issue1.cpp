@@ -64,7 +64,11 @@ int main(int argc, char *argv[])
     printf("input.type = %s\n", cv::typeToString(input.type()).c_str());
     printf("input.u.addr=%u\n", input.u->addr);
 
-    toBMI(input, &bmimg1, true);
+    //toBMI(input, &bmimg1, true);
+    int flag = (input.channels() == 1? CV_8UC1 : CV_8UC3);
+    cv::Mat xx = cv::Mat::zeros(input.rows, input.cols, flag);
+    cv::bmcv::toBMI(xx, &bmimg1, true);
+    
     bm_image_write_to_bmp(bmimg1, "test1.bmp");
     bm_image_destroy(bmimg1);
 

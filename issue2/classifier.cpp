@@ -206,13 +206,13 @@ void Classifier::preForward(std::vector<cv::Mat> &images) {
     {
         bm_image bmimg;
 
-        //long current_time = getSystemTime();
-        //string timetamp = to_string(current_time);
-        //string timetamp_cv = timetamp + "_cv.jpg";
-        //timetamp = timetamp + ".jpg";
+        long current_time = getSystemTime();
+        std::string timetamp = std::to_string(current_time);
+        std::string timetamp_cv = timetamp + "_cv.jpg";
+        timetamp = timetamp + ".jpg";
 
-        //imwrite(timetamp_cv.c_str(), images[i]);
-        //cout << "input size==============" << images[i].size() << timetamp_cv.c_str() << endl;
+        imwrite(timetamp_cv.c_str(), images[i]);
+        std::cout << "input size==============" << images[i].size() << timetamp_cv.c_str() << std::endl;
 
         cv::bmcv::uploadMat(images[i]);
         if (1)
@@ -346,8 +346,14 @@ bool Classifier::Run(cv::Mat &image, classifier_result &result) {
 
 int main(int argc, char *argv[])
 {
-    Classifier predict("../issue2/compilation.bmodel");
-    cv::Mat img1 = cv::imread("../images/test2.jpg");
+    if (argc < 3) {
+        std::cout << "USAGE:" << std::endl;
+        std::cout << "  " << argv[0] << " <gray image path>" << std::endl;
+        exit(1);
+    }
+
+    Classifier predict(argv[1]);
+    cv::Mat img1 = cv::imread(argv[2]);
     classifier_result result;
     predict.Run(img1, result);
 

@@ -105,3 +105,6 @@ target_link_libraries(opencv_gray_issue1 ${bmnnsdk_link_libs})
 
 add_executable(issue2 issue2/classifier.cpp)
 target_link_libraries(issue2 ${bmnnsdk_link_libs})
+
+add_executable(opencv_roi_resize opencv_roi_resize.cpp)
+target_link_libraries(opencv_roi_resize ${bmnnsdk_link_libs})
