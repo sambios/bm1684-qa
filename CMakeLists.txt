@@ -8,6 +8,7 @@ if (NOT DEFINED TARGET_ARCH)
 endif()
 
 option(USE_BMNNSDK2 "Use bmnnsdk2 as sdk root" ON)
+option(USE_DEV_OPENCV "Use Develop opencv" ON)
 
 #set(TARGET_ARCH "x86-pcie")
 #set(TARGET_ARCH "arm-pcie")
@@ -25,7 +26,7 @@ if (USE_BMNNSDK2)
             ${BMNNSDK2_TOP}/include/bmruntime
             ${BMNNSDK2_TOP}/include/bmlib
             ${BMNNSDK2_TOP}/include/third_party/boost/include
-            ${BMNNSDK2_TOP}/include/opencv/opencv4
+	    #${BMNNSDK2_TOP}/include/opencv/opencv4
             ${BMNNSDK2_TOP}/include/ffmpeg
             CACHE INTERNAL "")
 
@@ -39,7 +40,7 @@ if (USE_BMNNSDK2)
         set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/pcie
                 ${BMNNSDK2_TOP}/lib/opencv/x86
                 ${BMNNSDK2_TOP}/lib/thirdparty/x86
-                ${BMNNSDK2_TOP}/lib/opencv/x86
+		#${BMNNSDK2_TOP}/lib/opencv/x86
                 ${BMNNSDK2_TOP}/lib/ffmpeg/x86
                 ${BMNNSDK2_TOP}/lib/decode/x86
                 CACHE INTERNAL "")
@@ -49,7 +50,7 @@ if (USE_BMNNSDK2)
         set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/arm_pcie
                 ${BMNNSDK2_TOP}/lib/opencv/arm_pcie
                 ${BMNNSDK2_TOP}/lib/thirdparty/soc
-                ${BMNNSDK2_TOP}/lib/opencv/arm_pcie
+		#${BMNNSDK2_TOP}/lib/opencv/arm_pcie
                 ${BMNNSDK2_TOP}/lib/ffmpeg/arm_pcie
                 ${BMNNSDK2_TOP}/lib/decode/arm_pcie
                 CACHE INTERNAL "")
@@ -57,28 +58,20 @@ if (USE_BMNNSDK2)
         set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/soc
                 ${BMNNSDK2_TOP}/lib/opencv/soc
                 ${BMNNSDK2_TOP}/lib/thirdparty/soc
-                ${BMNNSDK2_TOP}/lib/opencv/soc
+		#${BMNNSDK2_TOP}/lib/opencv/soc
                 ${BMNNSDK2_TOP}/lib/ffmpeg/soc
                 ${BMNNSDK2_TOP}/lib/decode/soc
                 CACHE INTERNAL "")
     endif ()
-else (USE_BMNNSDK2)
+endif ()
     set(BM168X_ROOT /home/yuan/bitmain/work/bm168x)
     set(NNTC_ROOT /home/yuan/bitmain/work/nntoolchain)
-    set(MW_ROOT /home/yuan/bitmain/work/middleware-soc/install/pcie_bm1684_asic)
+    set(MW_ROOT /home/linaro/soc_bm1684_asic)
 
-    set(bmnnsdk_inc_dirs ${BM168X_ROOT}/out/bm1684_x86_pcie_device/release/include
-            ${NNTC_ROOT}/net_compiler/out/install_bmruntime/include
-            ${MW_ROOT}/ffmpeg/usr/local/include
-            ${MW_ROOT}/opencv/include/opencv4)
-    set(bmnnsdk_link_dirs ${BM168X_ROOT}/out/bm1684_x86_pcie_device/release/libs
-            ${NNTC_ROOT}/net_compiler/out/install_bmruntime/lib
-            ${MW_ROOT}/opencv/lib
-            ${MW_ROOT}/ffmpeg/usr/local/lib
-            ${MW_ROOT}/decode/lib
-            )
+    set(opencv_inc_dirs ${MW_ROOT}/opencv/include/opencv4)
+    set(opencv_link_dirs ${MW_ROOT}/opencv/lib)
 
-    set(bmnnsdk_link_libs
+    set(opencv_link_libs
             opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
             avfilter avformat avcodec avutil swresample swscale bmvideo bmjpuapi bmjpulite
             bmrt bmcv bmlib)
