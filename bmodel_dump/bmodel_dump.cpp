@@ -40,7 +40,8 @@ void BModelDump::preForward(int in_value) {
                 p[j] = in_value;
             }
         }else if (input_tensor_[i].dtype == BM_INT8) {
-            memset(p_sys_data, in_value, tensor_bytes);
+            float scale = net_info->input_scales[i];
+            memset(p_sys_data, in_value*scale, tensor_bytes);
         }
 
         // System -> Device
@@ -74,14 +75,29 @@ void BModelDump::forward() {
 void BModelDump::postForward() {
   auto net_info = bmrt_get_network_info(p_bmrt_, net_names_[0]);
   for(int i = 0; i < output_num_; ++i) {
-      int tensor_bytesize = bmrt_tensor_bytesize(output_tensor_ + i);
+      auto tensor_ptr = output_tensor_ + i;
+      int tensor_bytesize = bmrt_tensor_bytesize(tensor_ptr);
+      int tensor_count = bmrt_shape_count(&tensor_ptr->shape);
       int8_t  *p_sys_data = new int8_t[tensor_bytesize];
       bm_memcpy_d2s_partial(bm_handle_, p_sys_data, output_tensor_[i].device_mem, tensor_bytesize);
-
-      std::string output_fname = cv::format("output_%s.data", net_info->output_names[i]);
-      FILE *fp = fopen(output_fname.c_str(), "wb+");
-      fwrite(p_sys_data, 1, tensor_bytesize, fp);
-      fclose(fp);
+      if (net_info->output_dtypes[i] == BM_FLOAT32) {
+          std::string output_fname = cv::format("output_%s.data", net_info->output_names[i]);
+          FILE *fp = fopen(output_fname.c_str(), "wb+");
+          fwrite(p_sys_data, 1, tensor_bytesize, fp);
+          fclose(fp);
+      }else if (net_info->output_dtypes[i] == BM_INT8) {
+          float_t *fp32 = new float[tensor_count];
+          for(int j = 0;j < tensor_count; ++j) {
+              fp32[j] = p_sys_data[j] * net_info->output_scales[i];
+          }
+          std::string output_fname = cv::format("output_%s.data", net_info->output_names[i]);
+          FILE *fp = fopen(output_fname.c_str(), "wb+");
+          fwrite(fp32, 1, tensor_count * sizeof(float), fp);
+          fclose(fp);
+          delete []fp32;
+      }else{
+          assert(0);
+      }
 
       delete [] p_sys_data;
   }

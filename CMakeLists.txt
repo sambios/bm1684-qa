@@ -8,18 +8,19 @@ if (NOT DEFINED TARGET_ARCH)
 endif()
 
 option(USE_BMNNSDK2 "Use bmnnsdk2 as sdk root" ON)
-option(USE_DEV_OPENCV "Use Develop opencv" OFF)
+option(USE_DEV_OPENCV "Use Develop opencv" ON)
 
 # User need to set this before compiling.
 if (USE_BMNNSDK2)
     if (DEFINED ENV{REL_TOP})
         set(BMNNSDK2_TOP $ENV{REL_TOP})
     else ()
-        set(BMNNSDK2_TOP $ENV{HOME}/bmnnsdk2/bmnnsdk2-bm1684_v2.3.2)
+        set(BMNNSDK2_TOP $ENV{HOME}/bmnnsdk2/bmnnsdk2-latest)
     endif ()
 
     set(bmnnsdk_inc_dirs ${BMNNSDK2_TOP}/include
             ${BMNNSDK2_TOP}/include/bmruntime
+            ${BMNNSDK2_TOP}/include/bmlang
             ${BMNNSDK2_TOP}/include/bmlib
             ${BMNNSDK2_TOP}/include/third_party/boost/include
             )
@@ -30,6 +31,8 @@ if (USE_BMNNSDK2)
 
     if (${TARGET_ARCH} STREQUAL "x86")
         set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/pcie
+                ${BMNNSDK2_TOP}/lib/bmlang
+                ${BMNNSDK2_TOP}/lib/bmcompiler
                 ${BMNNSDK2_TOP}/lib/thirdparty/x86
                 )
         set(opencv_link_dirs ${BMNNSDK2_TOP}/lib/opencv/x86)
@@ -57,7 +60,7 @@ endif(USE_BMNNSDK2)
 
 if(USE_DEV_OPENCV)
     if (${TARGET_ARCH} STREQUAL "x86")
-        set(MW_ROOT /home/linaro/pcie_bm1684_asic)
+        set(MW_ROOT /home/yuan/bitmain/work/middleware-soc/install/pcie_bm1684_asic)
     elseif (${TARGET_ARCH} STREQUAL "aarch64")
         set(MW_ROOT /home/linaro/pcie_arm64_bm1684_asic)
     elseif (${TARGET_ARCH} STREQUAL "mips64")
@@ -69,7 +72,7 @@ if(USE_DEV_OPENCV)
     set(opencv_inc_dirs ${MW_ROOT}/opencv/include/opencv4)
     set(ffmpeg_inc_dirs ${MW_ROOT}/ffmepg/usr/local/include)
     set(opencv_link_dirs ${MW_ROOT}/opencv/lib)
-    set(ffmpeg_link_dirs ${MW_ROOT}/ffmpeg/lib
+    set(ffmpeg_link_dirs ${MW_ROOT}/ffmpeg/usr/local/lib
             ${MW_ROOT}/decode/lib
             )
 endif()
@@ -77,8 +80,9 @@ endif()
 set(bmnnsdk_inc_dirs ${bmnnsdk_inc_dirs} ${opencv_inc_dirs} ${ffmpeg_inc_dirs})
 set(bmnnsdk_link_dirs ${bmnnsdk_link_dirs} ${opencv_link_dirs} ${ffmpeg_link_dirs})
 message(STATUS "bmnnsdk_inc_dirs=${bmnnsdk_inc_dirs}")
+message(STATUS "bmnnsdk_link_dirs=${bmnnsdk_link_dirs}")
 
-set(bmnnsdk_link_libs bmrt bmlib bmcv
+set(bmnnsdk_link_libs bmrt bmlib bmcv bmlang bmcompiler
         opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
         avfilter avformat avcodec avutil swresample swscale
         bmvideo bmjpuapi bmjpulite
@@ -105,3 +109,15 @@ target_link_libraries(issue2 ${bmnnsdk_link_libs})
 
 add_executable(opencv_roi_resize opencv_roi_resize.cpp)
 target_link_libraries(opencv_roi_resize ${bmnnsdk_link_libs})
+
+add_executable(bmcv_save_bmimg bmcv_save_bmimg.cpp)
+target_link_libraries(bmcv_save_bmimg ${bmnnsdk_link_libs})
+
+add_executable(chuanda-001 chuanda-001.cpp)
+target_link_libraries(chuanda-001 ${bmnnsdk_link_libs})
+
+add_executable(bmlang_topk_runtime bmlang_topk_runtime.cpp)
+target_link_libraries(bmlang_topk_runtime ${bmnnsdk_link_libs})
+
+add_executable(opencv_video_rewriter_test opencv_video_rewriter_test.cpp)
+target_link_libraries(opencv_video_rewriter_test ${bmnnsdk_link_libs})

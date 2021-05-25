@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
     //toBMI(input, &bmimg1, true);
     int flag = (input.channels() == 1? CV_8UC1 : CV_8UC3);
-    cv::Mat xx = cv::Mat::zeros(input.rows, input.cols, flag);
+    cv::Mat xx = cv::Mat::zeros(3, 3, flag);
     printf("xx.type = %s\n", cv::typeToString(xx.type()).c_str());
     printf("xx.u.addr=%u\n", xx.u->addr);
     cv::bmcv::toBMI(xx, &bmimg1, true);

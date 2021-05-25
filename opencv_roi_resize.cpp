@@ -26,10 +26,11 @@ int main(int argc, char *argv[]) {
     {
         for (int j = 0; j < image1.rows-roi_size.height; ++j) {
 
-            if (j%32==0) {
+            if (j%2==0) {
                 cv::Rect rect(cv::Size(i, j), roi_size);
                 img_roi = image1(rect);
-                cv::bmcv::resize(img_roi, img_reiszed);
+                ret = cv::bmcv::resize(img_roi, img_reiszed);
+                CV_Assert(ret == 0);
                 cv::imwrite("img_resized.jpg", img_reiszed);
             }
         }
