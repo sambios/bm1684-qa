@@ -8,7 +8,7 @@ if (NOT DEFINED TARGET_ARCH)
 endif()
 
 option(USE_BMNNSDK2 "Use bmnnsdk2 as sdk root" ON)
-option(USE_DEV_OPENCV "Use Develop opencv" ON)
+option(USE_DEV_OPENCV "Use Develop opencv" OFF)
 
 # User need to set this before compiling.
 if (USE_BMNNSDK2)
@@ -23,10 +23,11 @@ if (USE_BMNNSDK2)
             ${BMNNSDK2_TOP}/include/bmlang
             ${BMNNSDK2_TOP}/include/bmlib
             ${BMNNSDK2_TOP}/include/third_party/boost/include
+            ${BMNNSDK2_TOP}/include/sail
             )
 
     set(opencv_inc_dirs ${BMNNSDK2_TOP}/include/opencv/opencv4)
-    set(ffmpeg_inc_dirs ${BMNNSDK2_TOP}/include/ffmepg)
+    set(ffmpeg_inc_dirs ${BMNNSDK2_TOP}/include/ffmpeg)
 
 
     if (${TARGET_ARCH} STREQUAL "x86")
@@ -34,6 +35,7 @@ if (USE_BMNNSDK2)
                 ${BMNNSDK2_TOP}/lib/bmlang
                 ${BMNNSDK2_TOP}/lib/bmcompiler
                 ${BMNNSDK2_TOP}/lib/thirdparty/x86
+                ${BMNNSDK2_TOP}/lib/sail/pcie
                 )
         set(opencv_link_dirs ${BMNNSDK2_TOP}/lib/opencv/x86)
         set(ffmpeg_link_dirs ${BMNNSDK2_TOP}/lib/ffmpeg/x86
@@ -79,15 +81,17 @@ endif()
 
 set(bmnnsdk_inc_dirs ${bmnnsdk_inc_dirs} ${opencv_inc_dirs} ${ffmpeg_inc_dirs})
 set(bmnnsdk_link_dirs ${bmnnsdk_link_dirs} ${opencv_link_dirs} ${ffmpeg_link_dirs})
-message(STATUS "bmnnsdk_inc_dirs=${bmnnsdk_inc_dirs}")
-message(STATUS "bmnnsdk_link_dirs=${bmnnsdk_link_dirs}")
+
 
 set(bmnnsdk_link_libs bmrt bmlib bmcv bmlang bmcompiler
         opencv_core opencv_imgproc opencv_imgcodecs opencv_videoio opencv_dnn
-        avfilter avformat avcodec avutil swresample swscale
+        avformat avfilter avcodec avutil avdevice  swresample swscale
         bmvideo bmjpuapi bmjpulite
         boost_system boost_filesystem protobuf gflags glog pthread)
 
+message(STATUS "bmnnsdk_inc_dirs=${bmnnsdk_inc_dirs}")
+message(STATUS "bmnnsdk_link_dirs=${bmnnsdk_link_dirs}")
+message(STATUS "bmnnsdk_link_libs=${bmnnsdk_link_libs}")
 
 include_directories(${bmnnsdk_inc_dirs})
 link_directories(${bmnnsdk_link_dirs})
@@ -121,3 +125,12 @@ target_link_libraries(bmlang_topk_runtime ${bmnnsdk_link_libs})
 
 add_executable(opencv_video_rewriter_test opencv_video_rewriter_test.cpp)
 target_link_libraries(opencv_video_rewriter_test ${bmnnsdk_link_libs})
+
+add_executable(sail_test_1 sail_test_1.cpp)
+target_link_libraries(sail_test_1 sail ${bmnnsdk_link_libs})
+
+add_executable(opencv_bmcv_verify opencv_bmcv_verify.cpp)
+target_link_libraries(opencv_bmcv_verify ${bmnnsdk_link_libs})
+
+add_executable(ffmpeg_decode ffmpeg_decode.cpp)
+target_link_libraries(ffmpeg_decode ${bmnnsdk_link_libs})
