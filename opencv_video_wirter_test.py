@@ -1,4 +1,5 @@
 import cv2
+import time
 
 cap = cv2.VideoCapture("/home/yuan/yanxi-1080p-2M.mp4")
 fcc = cv2.VideoWriter_fourcc('a', 'v', 'c', '1')
@@ -10,8 +11,10 @@ while cap.isOpened():
     if not ret:
         print("Finished to read the video!")
         break;
-
+    starttime = time.time()
     out.write(img0)
+    endtime = time.time()
+    print((endtime-starttime))
 
 cap.release()
 out.release()

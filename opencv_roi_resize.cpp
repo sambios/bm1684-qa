@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     {
         for (int j = 0; j < image1.rows-roi_size.height; ++j) {
 
-            if (j%2==0) {
+            if (1) {
                 cv::Rect rect(cv::Size(i, j), roi_size);
                 img_roi = image1(rect);
                 ret = cv::bmcv::resize(img_roi, img_reiszed);

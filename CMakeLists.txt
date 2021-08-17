@@ -134,3 +134,21 @@ target_link_libraries(opencv_bmcv_verify ${bmnnsdk_link_libs})
 
 add_executable(ffmpeg_decode ffmpeg_decode.cpp)
 target_link_libraries(ffmpeg_decode ${bmnnsdk_link_libs})
+
+add_executable(bmcv_test_1 bmcv_test_1.cpp)
+target_link_libraries(bmcv_test_1 ${bmnnsdk_link_libs})
+
+add_executable(sail_test_2 sail_test_2.cpp)
+target_link_libraries(sail_test_2 sail ${bmnnsdk_link_libs})
+
+add_executable(opencv_imread_perf opencv_imread_perf.cpp)
+target_link_libraries(opencv_imread_perf ${bmnnsdk_link_libs})
+
+add_executable(sail_test_3 sail_test_3.cpp)
+target_link_libraries(sail_test_3 sail ${bmnnsdk_link_libs})
+
+add_executable(ffmpeg_bmcv_test ffmpeg_bmcv_test.cpp)
+target_link_libraries(ffmpeg_bmcv_test sail ${bmnnsdk_link_libs})
+
+add_executable(sail_test_4 sail_test_4.cpp)
+target_link_libraries(sail_test_4 sail ${bmnnsdk_link_libs})

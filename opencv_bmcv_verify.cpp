@@ -43,35 +43,43 @@ int main(int argc, char *argv[]) {
     bm_dev_request(&handle, 0);
 
     printf("image: %s\n", argv[1]);
-    cv::Mat input = cv::imread(argv[1]);
-    printf("input.type = %s\n", cv::typeToString(input.type()).c_str());
-    //Dump Data;
-    if (0){
-        FILE *fp = fopen("opencv.file", "wb");
-        //for (int r = 0; r < input.rows; r++)
-        //{
-        //    fwrite(reinterpret_cast<const char*>(input.ptr(r)), 1, input.cols*input.elemSize(), fp);
-        //}
-        int size = input.rows * input.cols * input.elemSize();
-        fwrite((char*)input.data, 1, size, fp);
-        fclose(fp);
-    }
-    cv::bmcv::dumpMat(input, "opencv.file");
-    cv::imwrite("opencv.file.bmp", input);
+    cv::Mat input0_dev0 = cv::imread(argv[1], cv::IMREAD_COLOR, 0);
+    cv::Mat input1_dev0 = cv::imread(argv[1], cv::IMREAD_COLOR, 0);
+    printf("input.type = %s\n", cv::typeToString(input0_dev0.type()).c_str());
+    printf("input.avformat=%d\n", input0_dev0.avFormat());
+#if 0
+    cv::Mat input1_dev1 = cv::imread(argv[1], cv::IMREAD_COLOR, 1);
+    printf("before copy input0_dev0.card=%d\n", input0_dev0.card);
+    input0_dev0 = input1_dev1;
+    printf("after copy input.card=%d\n", input0_dev0.card);
 
-#if 1
+    cv::Mat input3;
+    input1_dev0.copyTo(input3);
+    input1_dev1.copyTo(input1_dev0);
+    printf("after deep copy input1_dev0.card=%d\n", input1_dev0.card);
+    printf("after deep copy input1_dev1.card=%d\n", input1_dev1.card);
+#endif
+    //Dump Data;
+    bm::save_cvmat("opencv.file", input0_dev0);
+
+    cv::bmcv::dumpMat(input0_dev0, "opencv.file2");
+    cv::imwrite("opencv.file.bmp", input0_dev0);
+
     int ret = 0;
     bm_image bmimg1;
     decode_jpeg(handle, argv[1], bmimg1);
     bm_image out1;
     bm_image_create(handle, bmimg1.height, bmimg1.width, FORMAT_BGR_PACKED, DATA_TYPE_EXT_1N_BYTE, &out1);
-    ret = bmcv_image_vpp_convert(handle, 1, bmimg1, &out1);
+    ret = bmcv_image_vpp_csc_matrix_convert(handle, 1, bmimg1, &out1, CSC_YPbPr2RGB_BT601);
     CV_Assert(ret == 0);
-    //bm::save_bmimage("bmcv.file", &out1);
+
+    // save file 1
     cv::bmcv::dumpBMImage(&out1, "bmcv.file");
+    // save file 2
+    bm::save_bmimage("bmcv.file2", &out1);
+    // savee to bmp
     bm_image_write_to_bmp(out1, "bmcv.file.bmp");
     bm_image_destroy(bmimg1);
     bm_image_destroy(out1);
-#endif
     return 0;
 }

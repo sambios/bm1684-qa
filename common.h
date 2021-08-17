@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "opencv2/opencv.hpp"
+
 #include "bmcv_api_ext.h"
 
 namespace bm {
@@ -14,6 +16,18 @@ namespace bm {
     {
         FILE *fp = fopen(filepath.c_str(), "wb");
         fwrite(p,1, size, fp);
+        fclose(fp);
+    }
+
+    static void save_cvmat(const std::string& filepath, cv::Mat &input)
+    {
+        FILE *fp = fopen(filepath.c_str(), "wb");
+        int size = input.rows * input.cols * input.elemSize();
+        fwrite((char*)input.data, 1, size, fp);
+        //for (int r = 0; r < input.rows; r++)
+        //{
+        //    fwrite(reinterpret_cast<const char*>(input.ptr(r)), 1, input.cols*input.elemSize(), fp);
+        //}
         fclose(fp);
     }
 

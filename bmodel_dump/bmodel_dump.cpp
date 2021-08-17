@@ -41,11 +41,13 @@ void BModelDump::preForward(int in_value) {
             }
         }else if (input_tensor_[i].dtype == BM_INT8) {
             float scale = net_info->input_scales[i];
-            memset(p_sys_data, in_value*scale, tensor_bytes);
+            int iv = in_value *scale;
+            int8_t v = std::max(std::min(iv, -127), 127);
+            memset(p_sys_data, v, tensor_bytes);
         }
 
         // System -> Device
-        bm_memcpy_s2d(bm_handle_, input_tensor_[i].device_mem, p_sys_data);
+        bm_memcpy_s2d_partial(bm_handle_, input_tensor_[i].device_mem, p_sys_data, tensor_bytes);
         std::string fname = cv::format("input_%s.data", net_info->input_names[i]);
         FILE *fp = fopen(fname.c_str(), "wb");
         fwrite(p_sys_data, 1, tensor_bytes, fp);
