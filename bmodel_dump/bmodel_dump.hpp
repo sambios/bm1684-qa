@@ -10,6 +10,10 @@ class BModelDump {
 public:
   BModelDump(void *bmrt, bm_handle_t bm_handle);
   ~BModelDump();
+  void set_param(int netIdx, int stageIdx){
+      net_idx_ = netIdx;
+      stage_idx_ = stageIdx;
+  }
   void preForward(int in_value=1);
   void forward();
   void postForward();
@@ -19,6 +23,8 @@ private:
   const char **net_names_;
   void *p_bmrt_;
   bm_handle_t bm_handle_;
+  int stage_idx_;
+  int net_idx_;
 
   // input & output buffers
   int output_num_;

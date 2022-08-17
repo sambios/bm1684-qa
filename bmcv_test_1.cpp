@@ -3,7 +3,43 @@
 //
 #include <iostream>
 #include <fstream>
+#include <cstring>
+#include <assert.h>
 #include "bmcv_api_ext.h"
+
+#define N 8
+static void bmimage_new_test(bm_handle_t bmhandle)
+{
+  bm_image *resize_bmcv_ = nullptr;
+
+  if(resize_bmcv_ == nullptr)
+  {
+    resize_bmcv_ = new bm_image[N];
+  }
+
+  for(int i = 0; i < N; ++i)
+  {
+    bm_status_t status = bm_image_create(bmhandle, 640, 640,
+                                         FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resize_bmcv_[i]);
+    if(BM_SUCCESS != status)
+    {
+      std::cout << "create bm image error" << std::endl;
+      exit(0);
+    }
+  }
+
+  auto ret = bm_image_alloc_contiguous_mem(N, resize_bmcv_);
+  assert(BM_SUCCESS == ret);
+  bm_image_free_contiguous_mem(N, resize_bmcv_);
+  for(int i = 0; i < N; ++i) {
+    bm_image_destroy(resize_bmcv_[i]);
+  }
+
+  delete [] resize_bmcv_;
+
+}
+
+
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -15,6 +51,10 @@ int main(int argc, char *argv[]) {
 
     bm_handle_t handle;
     bm_dev_request(&handle, 0);
+
+    bmimage_new_test(handle);
+
+    return 0;
 
     std::ifstream filestr;
     filestr.open(argv[1], std::ios::binary);
@@ -39,6 +79,8 @@ int main(int argc, char *argv[]) {
         }
 
         bm_image_destroy(img);
+        // this is important.
+        memset(&img, 0, sizeof(img));
         printf("loop %d\n", i);
     }
 

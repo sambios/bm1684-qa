@@ -31,7 +31,14 @@ namespace bm {
         fclose(fp);
     }
 
-    static void save_bmimage(const std::string& filepath, bm_image *img)
+static void bm_imag_imwrite(const std::string& filepath, bm_image *img)
+{
+    cv::Mat m1;
+    cv::bmcv::toMAT(img, m1);
+    cv::imwrite(filepath, m1);
+}
+
+    static void dump_bmimage(const std::string& filepath, bm_image *img)
     {
         FILE *fp = fopen(filepath.c_str(), "wb");
         bm_image_format_info_t fmt_info;

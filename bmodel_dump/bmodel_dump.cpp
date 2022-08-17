@@ -4,10 +4,11 @@ BModelDump::BModelDump(void *bmrt, bm_handle_t bm_handle) {
     p_bmrt_ = bmrt;
     bm_handle_ = bm_handle;
     bm_status_t status = BM_SUCCESS;
+    input_tensor_= NULL;
+    output_tensor_ = NULL;
 
     // as of a simple example, assume the model file contains one BModelDump network only
     bmrt_get_network_names(p_bmrt_, &net_names_);
-    std::cout << "> get model " << net_names_[0] << " successfully" << std::endl;
 }
 
 BModelDump::~BModelDump() {
@@ -23,12 +24,20 @@ BModelDump::~BModelDump() {
 
 
 void BModelDump::preForward(int in_value) {
-    auto net_info = bmrt_get_network_info(p_bmrt_, net_names_[0]);
+    auto net_info = bmrt_get_network_info(p_bmrt_, net_names_[net_idx_]);
 
     input_num_ = net_info->input_num;
+    if (input_tensor_) {
+        if (input_tensor_->device_mem.size > 0) {
+            bm_free_device(bm_handle_, input_tensor_->device_mem);
+        }
+        delete[] input_tensor_;
+    }
+
     input_tensor_ = new bm_tensor_t[input_num_];
     for (int i = 0; i < input_num_; ++i) {
-        auto &input_shape = net_info->stages[0].input_shapes[i];
+        auto &input_shape = net_info->stages[stage_idx_].input_shapes[i];
+        input_shape.dims[0]=8;
         bmrt_tensor(&input_tensor_[i], p_bmrt_, net_info->input_dtypes[i], input_shape);
         int tensor_bytes = bmrt_tensor_bytesize(&input_tensor_[i]);
         int shape_count = bmrt_shape_count(&input_shape);
@@ -52,12 +61,20 @@ void BModelDump::preForward(int in_value) {
         FILE *fp = fopen(fname.c_str(), "wb");
         fwrite(p_sys_data, 1, tensor_bytes, fp);
         fclose(fp);
+        delete[] p_sys_data;
     }
 
     output_num_ = net_info->output_num;
+    if (output_tensor_) {
+        if (output_tensor_->device_mem.size > 0) {
+            bm_free_device(bm_handle_, output_tensor_->device_mem);
+        }
+        delete[] output_tensor_;
+    }
+
     output_tensor_ = new bm_tensor_t[output_num_];
     for (int i = 0; i < output_num_; ++i) {
-        auto &output_shape = net_info->stages[0].output_shapes[i];
+        auto &output_shape = net_info->stages[stage_idx_].output_shapes[i];
         bmrt_tensor(&output_tensor_[i], p_bmrt_, net_info->output_dtypes[i], output_shape);
     }
 }
@@ -65,17 +82,17 @@ void BModelDump::preForward(int in_value) {
 void BModelDump::forward() {
   bm_status_t status = BM_SUCCESS;
 
-  bool ret = bmrt_launch_tensor_ex(p_bmrt_, net_names_[0], input_tensor_,
+  bool ret = bmrt_launch_tensor_ex(p_bmrt_, net_names_[net_idx_], input_tensor_,
                                    input_num_, output_tensor_, output_num_, true, false);
   if (!ret) {
-    std::cout << "ERROR: Failed to launch network" << net_names_[0] << "inference" << std::endl;
+    std::cout << "ERROR: Failed to launch network" << net_names_[net_idx_] << "inference" << std::endl;
   }
 
   status = bm_thread_sync(bm_handle_);
 }
 
 void BModelDump::postForward() {
-  auto net_info = bmrt_get_network_info(p_bmrt_, net_names_[0]);
+  auto net_info = bmrt_get_network_info(p_bmrt_, net_names_[net_idx_]);
   for(int i = 0; i < output_num_; ++i) {
       auto tensor_ptr = output_tensor_ + i;
       int tensor_bytesize = bmrt_tensor_bytesize(tensor_ptr);
@@ -101,6 +118,8 @@ void BModelDump::postForward() {
           assert(0);
       }
 
+      bm_free_device(bm_handle_, output_tensor_[i].device_mem);
+      output_tensor_[i].device_mem = bm_mem_null();
       delete [] p_sys_data;
   }
 }

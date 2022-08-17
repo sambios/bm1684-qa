@@ -50,11 +50,16 @@ int main(int argc, char **argv) {
     }
 
     BModelDump net(p_bmrt, bm_handle);
-    
+
     //4. detect process
-    net.preForward(set_value);
-    net.forward();
-    net.postForward();
+    //net.preForward(set_value);
+    net.set_param(2, 0);
+    for(int i = 0;i < 1;i ++) {
+        net.preForward(set_value);
+        net.forward();
+        net.postForward();
+    }
+    //net.postForward();
 
     //5. cleanup resource
     bmrt_destroy(p_bmrt);

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(TOP ${CMAKE_SOURCE_DIR})
 
 if (NOT DEFINED TARGET_ARCH)
@@ -37,9 +37,9 @@ if (USE_BMNNSDK2)
                 ${BMNNSDK2_TOP}/lib/thirdparty/x86
                 ${BMNNSDK2_TOP}/lib/sail/pcie
                 )
-        set(opencv_link_dirs ${BMNNSDK2_TOP}/lib/opencv/x86)
-        set(ffmpeg_link_dirs ${BMNNSDK2_TOP}/lib/ffmpeg/x86
-                ${BMNNSDK2_TOP}/lib/decode/x86
+        set(opencv_link_dirs ${BMNNSDK2_TOP}/lib/opencv/pcie)
+        set(ffmpeg_link_dirs ${BMNNSDK2_TOP}/lib/ffmpeg/pcie
+                ${BMNNSDK2_TOP}/lib/decode/pcie
                 )
     elseif (${TARGET_ARCH} STREQUAL "aarch64")
         set(bmnnsdk_link_dirs ${BMNNSDK2_TOP}/lib/bmnn/arm_pcie
@@ -152,3 +152,15 @@ target_link_libraries(ffmpeg_bmcv_test sail ${bmnnsdk_link_libs})
 
 add_executable(sail_test_4 sail_test_4.cpp)
 target_link_libraries(sail_test_4 sail ${bmnnsdk_link_libs})
+
+add_executable(bmruntime_test bmruntime_test.cpp)
+target_link_libraries(bmruntime_test ${bmnnsdk_link_libs})
+
+add_executable(opencv_capture opencv_capture.cpp)
+target_link_libraries(opencv_capture ${bmnnsdk_link_libs})
+
+add_executable(bmcv_test_vpp_convert_padding bmcv_test_vpp_convert_padding.cpp)
+target_link_libraries(bmcv_test_vpp_convert_padding ${bmnnsdk_link_libs})
+
+add_executable(bmcv_image_resize_test bmcv_image_resize_test.cpp)
+target_link_libraries(bmcv_image_resize_test ${bmnnsdk_link_libs})
