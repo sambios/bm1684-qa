@@ -31,12 +31,52 @@ namespace bm {
         fclose(fp);
     }
 
-static void bm_imag_imwrite(const std::string& filepath, bm_image *img)
+static void bm_image_imwrite(const std::string& filepath, bm_image *img)
 {
     cv::Mat m1;
     cv::bmcv::toMAT(img, m1);
     cv::imwrite(filepath, m1);
 }
+
+static void bm_image_jpeg_write(const std::string& filepath, bm_image *img)
+{
+    void *jpeg_data = nullptr;
+    size_t jpeg_dsize = 0;
+
+    bm_handle_t handle = bm_image_get_handle(img);
+    if (nullptr == handle) {
+      std::cout << "hanle is null" << std::endl;
+      return;
+    }
+
+    if (img->image_format != FORMAT_YUV420P || img->image_format != FORMAT_YUV422P ||
+        img->image_format != FORMAT_YUV444P || img->image_format != FORMAT_NV12 ||
+        img->image_format != FORMAT_NV21) {
+      bm_image out;
+      bm_image_create(handle, img->height, img->width, FORMAT_YUV420P, DATA_TYPE_EXT_1N_BYTE, &out);
+      int ret = bmcv_image_vpp_csc_matrix_convert(handle, 1, *img, &out, CSC_RGB2YPbPr_BT709); //全黑为0ok
+      //int ret = bmcv_image_vpp_csc_matrix_convert(handle, 1, *img, &out, CSC_RGB2YCbCr_BT709); //全黑非0
+      assert(ret == 0);
+      ret =  bmcv_image_jpeg_enc(handle, 1, &out, &jpeg_data, &jpeg_dsize);
+      if (ret < 0){
+        std::cout << "bmcv_image_jpeg_enc err" << std::endl;
+        return;
+      }
+
+      bm_image_destroy(out);
+
+    }else{
+      int ret =  bmcv_image_jpeg_enc(handle, 1, img, &jpeg_data, &jpeg_dsize);
+      if (ret < 0){
+        std::cout << "bmcv_image_jpeg_enc err" << std::endl;
+        return;
+      }
+    }
+
+    save_to_file(filepath, jpeg_data, jpeg_dsize);
+    free(jpeg_data);
+}
+
 
     static void dump_bmimage(const std::string& filepath, bm_image *img)
     {

@@ -336,7 +336,7 @@ int test_yuv_input_bmcv_resize() {
   ret = bmcv_image_resize(handle, image_num, resize_attr, &input, output);
   assert(ret == 0);
 
-  bm::bm_imag_imwrite("bmcv-image-resize.jpg", &output[0]);
+  bm::bm_image_imwrite("bmcv-image-resize.jpg", &output[0]);
 
   bm_image_free_contiguous_mem(image_num, output);
 
@@ -423,10 +423,14 @@ void test_rgb_bmcv_resiz(char *filepath, int stretch_fit)
 
   std::string ss=cv::format("bmcv-image-resize-%d.jpg", stretch_fit);
 
+#if 0
   bm::bm_imag_imwrite(ss, &output[0]);
-
+#else
+  bm::bm_image_jpeg_write(ss, &output[0]);
+#endif
   ss=cv::format("bmcv-image-resize-%d.bin", stretch_fit);
   bm::dump_bmimage(ss, &output[0]);
+
 
   bm_image_free_contiguous_mem(image_num, output);
 
@@ -452,7 +456,7 @@ int main(int argc, char *argv[])
       filepath = argv[1];
   }
 
-  test_rgb_bmcv_resiz(filepath, 1);
+  //test_rgb_bmcv_resiz(filepath, 1);
   test_rgb_bmcv_resiz(filepath, 0);
   return 0;
 
